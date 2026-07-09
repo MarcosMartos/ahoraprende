@@ -1,0 +1,25 @@
+---
+import ProductCard from './ProductCard.astro';
+import { productosDestacados } from '../data/products';
+---
+
+<section id="catalogo" class="max-w-7xl mx-auto px-4 py-12 scroll-mt-24 bg-transparent">
+  <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-10">
+    <div class="space-y-1">
+      <h2 class="text-3xl font-bold tracking-tight text-white">Catálogo de Productos</h2>
+      <p class="text-slate-400 text-sm">Disponibilidad en tiempo real para retiro inmediato.</p>
+    </div>
+    <div id="category-filters" class="flex flex-row gap-2 w-full lg:w-auto overflow-x-auto pb-2 scrollbar-none relative z-10 snap-x">
+      <button data-category="todos" class="btn-filter bg-blue-600 text-white text-xs md:text-sm px-5 py-2 rounded-xl font-medium shadow-md transition-all whitespace-nowrap snap-start">Todos</button>
+      <button data-category="Celulares" class="btn-filter bg-slate-900 text-slate-400 hover:text-slate-200 text-xs md:text-sm px-5 py-2 rounded-xl font-medium border border-slate-800/80 transition-all whitespace-nowrap snap-start">Celulares</button>
+      <button data-category="Accesorios" class="btn-filter bg-slate-900 text-slate-400 hover:text-slate-200 text-xs md:text-sm px-5 py-2 rounded-xl font-medium border border-slate-800/80 transition-all whitespace-nowrap snap-start">Accesorios</button>
+      <button data-category="Repuestos" class="btn-filter bg-slate-900 text-slate-400 hover:text-slate-200 text-xs md:text-sm px-5 py-2 rounded-xl font-medium border border-slate-800/80 transition-all whitespace-nowrap snap-start">Repuestos</button>
+    </div>
+  </div>
+
+  <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    {productosDestacados.map((producto) => (
+      <ProductCard producto={producto} />
+    ))}
+  </div>
+</section>
