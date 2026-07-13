@@ -11,6 +11,7 @@ import { productosDestacados } from '../data/products';
     </div>
     <div id="category-filters" class="flex flex-row gap-2 w-full lg:w-auto overflow-x-auto pb-2 scrollbar-none relative z-10 snap-x">
       <button data-category="todos" class="btn-filter bg-blue-600 text-white text-xs md:text-sm px-5 py-2 rounded-xl font-medium shadow-md transition-all whitespace-nowrap snap-start">Todos</button>
+      <button data-category="Celulares" class="btn-filter bg-slate-900 text-slate-400 hover:text-slate-200 text-xs md:text-sm px-5 py-2 rounded-xl font-medium border border-slate-800/80 transition-all whitespace-nowrap snap-start">Celulares</button>
       <button data-category="Auriculares" class="btn-filter bg-slate-900 text-slate-400 hover:text-slate-200 text-xs md:text-sm px-5 py-2 rounded-xl font-medium border border-slate-800/80 transition-all whitespace-nowrap snap-start">Auriculares</button>
       <button data-category="Parlantes" class="btn-filter bg-slate-900 text-slate-400 hover:text-slate-200 text-xs md:text-sm px-5 py-2 rounded-xl font-medium border border-slate-800/80 transition-all whitespace-nowrap snap-start">Parlantes</button>
       <button data-category="Microfonos" class="btn-filter bg-slate-900 text-slate-400 hover:text-slate-200 text-xs md:text-sm px-5 py-2 rounded-xl font-medium border border-slate-800/80 transition-all whitespace-nowrap snap-start">Microfonos</button>
@@ -21,5 +22,25 @@ import { productosDestacados } from '../data/products';
     {productosDestacados.map((producto) => (
       <ProductCard producto={producto} />
     ))}
+  </div>
+
+  <div class="flex justify-center items-center gap-4 mt-12 pb-6">
+    <button 
+      id="btn-prev-page" 
+      class="bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-900 text-slate-300 border border-slate-800/80 px-5 py-2.5 rounded-xl text-xs md:text-sm font-medium transition-all cursor-pointer disabled:cursor-not-allowed select-none"
+    >
+      ← Anterior
+    </button>
+    
+    <span id="page-info" class="text-xs text-slate-400 font-medium uppercase tracking-widest bg-slate-900/40 border border-slate-800/50 px-4 py-2.5 rounded-xl select-none">
+      Página <span id="current-page-num" class="text-blue-400 font-bold">1</span>
+    </span>
+
+    <button 
+      id="btn-next-page" 
+      class="bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-900 text-slate-300 border border-slate-800/80 px-5 py-2.5 rounded-xl text-xs md:text-sm font-medium transition-all cursor-pointer disabled:cursor-not-allowed select-none"
+    >
+      Siguiente →
+    </button>
   </div>
 </section>
