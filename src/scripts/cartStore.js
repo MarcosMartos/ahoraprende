@@ -11,8 +11,8 @@ let modal,
   modalAddBtn,
   currentActiveProductId = null;
 
-// Variables globales para la paginación
-let btnPrevPage, btnNextPage, currentPageNumEl;
+// Variables globales para la paginación y el buscador
+let btnPrevPage, btnNextPage, currentPageNumEl, searchInputEl;
 let paginaActual = 1;
 const PRODUCTOS_POR_PAGINA = 12;
 
@@ -34,6 +34,9 @@ function inicializarTienda() {
   btnPrevPage = document.getElementById("btn-prev-page");
   btnNextPage = document.getElementById("btn-next-page");
   currentPageNumEl = document.getElementById("current-page-num");
+
+  // Elemento del buscador
+  searchInputEl = document.getElementById("product-search");
 
   if (cartBtn) cartBtn.addEventListener("click", abrirCarrito);
   if (closeCartBtn) closeCartBtn.addEventListener("click", cerrarCarrito);
@@ -57,6 +60,14 @@ function inicializarTienda() {
 
   if (modalAddBtn) {
     modalAddBtn.addEventListener("click", agregarDesdeModal);
+  }
+
+  // Evento para capturar lo que se escribe en el buscador
+  if (searchInputEl) {
+    searchInputEl.addEventListener("input", () => {
+      paginaActual = 1; // Reseteamos a la página 1 en cada búsqueda
+      actualizarPaginacion();
+    });
   }
 
   configurarFiltros();
@@ -227,11 +238,25 @@ function actualizarPaginacion() {
   const btnActivo = document.querySelector(".btn-filter.bg-blue-600");
   const categoriaActiva = btnActivo ? btnActivo.dataset.category : "todos";
 
-  // 1. Filtrar los productos por la categoría que está activa en el DOM
+  // Capturar el término buscado de manera segura
+  const textoBuscado = searchInputEl ? searchInputEl.value.toLowerCase().trim() : "";
+
+  // 1. Filtrar los productos combinando categoría Y búsqueda por texto
   const cardsFiltradas = productCards.filter((card) => {
-    return (
-      categoriaActiva === "todos" || card.dataset.categoria === categoriaActiva
-    );
+    // Filtro por categoría
+    const coincideCategoria = categoriaActiva === "todos" || card.dataset.categoria === categoriaActiva;
+
+    // Filtro por texto en título, marca o categoría
+    const titulo = (card.dataset.titulo || "").toLowerCase();
+    const marca = (card.dataset.marca || "").toLowerCase();
+    const categoria = (card.dataset.categoria || "").toLowerCase();
+
+    const coincideBusqueda = !textoBuscado || 
+      titulo.includes(textoBuscado) || 
+      marca.includes(textoBuscado) || 
+      categoria.includes(textoBuscado);
+
+    return coincideCategoria && coincideBusqueda;
   });
 
   const totalProductos = cardsFiltradas.length;
@@ -247,7 +272,7 @@ function actualizarPaginacion() {
   // 2. Ocultar absolutamente todas las tarjetas
   productCards.forEach((card) => (card.style.display = "none"));
 
-  // 3. Volver a mostrar únicamente los elementos correspondientes a la página actual
+  // 3. Volver a mostrar únicamente los elementos correspondientes a la página filtrada actual
   cardsFiltradas.forEach((card, index) => {
     if (index >= indiceInicial && index < indiceFinal) {
       card.style.display = "";
@@ -378,9 +403,23 @@ function agregarDesdeModal() {
   }
 }
 
-// Aseguramos la ejecución limpia escuchando al DOM
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", inicializarTienda);
-} else {
-  inicializarTienda();
+// ==========================================
+// INICIALIZACIÓN OPTIMIZADA PARA ASTRO
+// ==========================================
+
+function ejecutarInicializacion() {
+  // Verificamos si los elementos esenciales existen en el DOM actual
+  if (document.getElementById("products-grid")) {
+    inicializarTienda();
+  }
 }
+
+// 1. Escucha estándar para la carga de página tradicional
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", ejecutarInicializacion);
+} else {
+  ejecutarInicializacion();
+}
+
+// 2. Soporte para Astro View Transitions (por si decides activarlas en tu proyecto)
+document.addEventListener("astro:page-load", ejecutarInicializacion);
