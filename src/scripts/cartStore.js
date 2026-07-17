@@ -1,7 +1,7 @@
 // src/scripts/cartStore.js
 
 let carrito = [];
-const WHATSAPP_NUMBER = "5492604000000";
+const WHATSAPP_NUMBER = "5492604202201";
 
 // Variables globales para los elementos del DOM
 let cartCountEl, cartBtn, cartSidebar, cartOverlay, closeCartBtn;
@@ -74,7 +74,8 @@ function inicializarTienda() {
   configurarTarjetasProductos();
   actualizarUI();
 
-  // Ejecutamos la paginación al iniciar la tienda
+  // Al iniciar la tienda, actualizarPaginacion leerá automáticamente
+  // que el botón de "Celulares" tiene la clase 'bg-blue-600' y filtrará de inmediato.
   actualizarPaginacion();
 }
 
@@ -91,7 +92,8 @@ function cerrarCarrito() {
   if (!cartSidebar || !cartOverlay) return;
   cartOverlay.classList.add("opacity-0");
   const innerSidebar = cartSidebar.querySelector(".absolute.right-0");
-  if (innerSidebar) innerSidebar.classList.remove("translate-x-full");
+  // CORRECCIÓN: Para ocultar el sidebar deslizándose, debemos VOLVER a agregar 'translate-x-full'
+  if (innerSidebar) innerSidebar.classList.add("translate-x-full");
   setTimeout(() => {
     cartSidebar.classList.add("invisible");
     document.body.classList.remove("overflow-hidden");
@@ -236,6 +238,8 @@ function cambiarPagina(direccion) {
 function actualizarPaginacion() {
   const productCards = Array.from(document.querySelectorAll(".producto-card"));
   const btnActivo = document.querySelector(".btn-filter.bg-blue-600");
+  
+  // Ahora, si el HTML tiene activo por defecto "Celulares", detectará "Celulares" inmediatamente al inicio.
   const categoriaActiva = btnActivo ? btnActivo.dataset.category : "todos";
 
   // Capturar el término buscado de manera segura
