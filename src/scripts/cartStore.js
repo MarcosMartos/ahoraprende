@@ -3,6 +3,9 @@
 let carrito = [];
 const WHATSAPP_NUMBER = "5492604202201";
 
+// URL de la imagen por defecto unificada con tu componente de Astro
+const IMAGEN_DEFAULT = "https://ik.imagekit.io/puaijw6o8/sin-imagen.webp?updatedAt=1784392612829";
+
 // Variables globales para los elementos del DOM
 let cartCountEl, cartBtn, cartSidebar, cartOverlay, closeCartBtn;
 let cartItemsContainer, cartTotalPriceEl, whatsappCheckoutBtn;
@@ -127,10 +130,15 @@ function actualizarUI() {
         ? `$${(item.precio * item.cantidad).toLocaleString("es-AR")}`
         : `<span class="text-[10px] font-medium px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase tracking-wider">Consultar</span>`;
 
+    // Corrección para imágenes del carrito vacías o indefinidas
+    const imagenItem = (!item.imagen || item.imagen.trim() === "" || item.imagen === "undefined") 
+      ? IMAGEN_DEFAULT 
+      : item.imagen;
+
     htmlContenido += `
       <div class="flex gap-3 bg-slate-950/40 p-3 rounded-xl border border-slate-800/60 items-center justify-between">
         <div class="flex items-center gap-3 min-w-0 flex-1">
-          <img src="${item.imagen}" alt="${item.titulo}" class="w-11 h-11 rounded-lg object-cover bg-slate-900 shrink-0 border border-slate-800" loading="lazy" />
+          <img src="${imagenItem}" alt="${item.titulo}" class="w-11 h-11 rounded-lg object-cover bg-slate-900 shrink-0 border border-slate-800" loading="lazy" onerror="this.onerror=null; this.src='${IMAGEN_DEFAULT}';" />
           <div class="min-w-0 flex-1">
             <h4 class="text-slate-200 text-xs font-medium truncate">${item.titulo}</h4>
             <div class="mt-0.5">${precioRenderizado}</div>
@@ -220,7 +228,7 @@ function enviarPedidoWhatsApp() {
 
   window.open(
     `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`,
-    "_blank",
+    "__blank",
   );
 }
 
@@ -322,8 +330,27 @@ function abrirModal(card) {
   const mBrandContainer = document.getElementById("modal-brand");
   const mPrice = document.getElementById("modal-price");
 
-  if (mImg) mImg.src = card.dataset.imagen || "";
-  if (mTitle) mTitle.textContent = card.dataset.titulo || "";
+  const imagenProducto = card.dataset.imagen;
+  const tituloProducto = card.dataset.titulo || "";
+
+  if (mImg) {
+    mImg.alt = tituloProducto || "Producto";
+    
+    // MODIFICACIÓN: Comprobación estricta para URLs vacías o indefinidas
+    if (!imagenProducto || imagenProducto.trim() === "" || imagenProducto === "undefined") {
+      mImg.src = IMAGEN_DEFAULT;
+    } else {
+      mImg.src = imagenProducto;
+    }
+
+    // MODIFICACIÓN: Controlador de errores en vivo por si el archivo guardado no existe en el servidor
+    mImg.onerror = function() {
+      this.onerror = null; // Evita bucle infinito si la por defecto también fallara
+      this.src = IMAGEN_DEFAULT;
+    };
+  }
+
+  if (mTitle) mTitle.textContent = tituloProducto;
   if (mTag) mTag.textContent = card.dataset.categoria || "";
 
   if (modalAddBtn) modalAddBtn.innerHTML = `🛒 Añadir al carrito`;
