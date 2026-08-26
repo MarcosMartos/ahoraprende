@@ -1,6 +1,6 @@
 // src/data/products.ts
 import Papa from 'papaparse';
-import { productosEspeciales } from './productosEspeciales'; // 🚨 Importamos tus productos locales
+import { productosEspeciales } from './productosEspeciales';
 
 export interface Producto {
   id: string;
@@ -13,14 +13,27 @@ export interface Producto {
 
 const GOOGLE_SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTyAo9GHk2roiKJpE35aAHrfqYSa1LVTeGnKYyO4NFr2b_O3CDtR-PWKaF8OACCoOxnqjWZm1rYcEO9/pub?output=csv";
 const IMAGEKIT_BASE_URL = "https://ik.imagekit.io/puaijw6o8/tr:w-600,f-auto,q-80";
-
 const IMAGEN_POR_DEFECTO = "https://ik.imagekit.io/puaijw6o8/sin-imagen.webp";
 
-function obtenerUrlImagen(id: string): string {
-  if (!id) return IMAGEN_POR_DEFECTO;
+// Convierte un nombre como "Funda iPhone 13 Pro!" a "funda-iphone-13-pro"
+function generarSlug(texto: string): string {
+  if (!texto) return "";
+  return texto
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Quita tildes
+    .replace(/[^a-z0-9]/g, "-")      // Remueve caracteres especiales y deja guiones
+    .replace(/-+/g, "-")             // Evita guiones dobles
+    .replace(/^-|-$/g, "");          // Quita guiones en extremos
+}
+
+function obtenerUrlImagen(titulo: string): string {
+  if (!titulo) return IMAGEN_POR_DEFECTO;
   
-  const nombreArchivo = id.toString().trim().toLowerCase();
-  return `${IMAGEKIT_BASE_URL}/${nombreArchivo}.webp`;
+  const nombreSlug = generarSlug(titulo);
+  // ImageKit convierte el formato automáticamente gracias al parámetro f-auto
+  return `${IMAGEKIT_BASE_URL}/${nombreSlug}`;
 }
 
 function parsearPrecioArgentino(valor: any): number | undefined {
@@ -60,7 +73,6 @@ export async function obtenerProductos(): Promise<Producto[]> {
       dynamicTyping: false 
     });
 
-    // 1. Mapeamos los productos que vienen de Google Sheets
     const productosStock = parsed.data.map((item: any): Producto => {
       const codInterno = item["Cod. producto"] || item["Cód. producto"];
       const codBarra = item["Cód. barra"] || item["Cod. barra"];
@@ -79,18 +91,16 @@ export async function obtenerProductos(): Promise<Producto[]> {
         titulo: String(tituloProducto).trim(),
         precio: precioProducto,
         categoria: String(categoriaProducto).trim(),
-        imagen: obtenerUrlImagen(String(idProducto)), 
+        // 🚨 Pasamos el TÍTULO para generar la imagen por nombre
+        imagen: obtenerUrlImagen(String(tituloProducto)), 
         marca: String(marcaProducto).trim()
       };
     });
 
-    // 2. 🚨 FUSIÓN: Combinamos los productos del stock con los productos especiales locales
-    // Colocamos primero los de stock y sumamos los especiales al final (o viceversa si lo prefieres)
     return [...productosStock, ...productosEspeciales];
 
   } catch (error) {
     console.error("No se pudo cargar el catálogo dinámico, intentando cargar solo productos locales:", error);
-    // Salvavidas: si por algún motivo no hay internet o se cae el CSV, la web cargará igual mostrando al menos tus productos locales
     return productosEspeciales;
   }
 }
