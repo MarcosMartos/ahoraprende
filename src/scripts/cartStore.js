@@ -2,11 +2,12 @@
 
 let carrito = [];
 const WHATSAPP_NUMBER = "5492604202201";
-const DESCUENTO_PORCENTAJE = 0.1; // 10% OFF
+const DESCUENTO_PORCENTAJE = 0.1; // 10% OFF Web
 
 const IMAGEN_DEFAULT =
   "https://ik.imagekit.io/puaijw6o8/sin-imagen.webp?updatedAt=1784392612829";
 
+// Elementos globales del DOM
 let cartCountEl, cartBtn, cartSidebar, cartOverlay, closeCartBtn;
 let cartItemsContainer,
   cartTotalPriceEl,
@@ -18,6 +19,7 @@ let modal,
   modalAddBtn,
   currentActiveProductId = null;
 
+// Elementos de paginación y búsqueda
 let btnPrevPage, btnNextPage, currentPageNumEl, searchInputEl;
 let paginaActual = 1;
 const PRODUCTOS_POR_PAGINA = 12;
@@ -41,10 +43,12 @@ function inicializarTienda() {
   closeModalBtn = document.getElementById("close-modal");
   modalAddBtn = document.getElementById("modal-add-btn");
 
+  // Elementos de paginación
   btnPrevPage = document.getElementById("btn-prev-page");
   btnNextPage = document.getElementById("btn-next-page");
   currentPageNumEl = document.getElementById("current-page-num");
 
+  // Input de Búsqueda
   searchInputEl = document.getElementById("product-search");
 
   if (cartBtn) cartBtn.addEventListener("click", abrirCarrito);
@@ -71,9 +75,10 @@ function inicializarTienda() {
     modalAddBtn.addEventListener("click", agregarDesdeModal);
   }
 
+  // Escuchar cuando el usuario escribe en el buscador
   if (searchInputEl) {
     searchInputEl.addEventListener("input", () => {
-      paginaActual = 1;
+      paginaActual = 1; // Resetea a la primera página al buscar
       actualizarPaginacion();
     });
   }
@@ -81,6 +86,8 @@ function inicializarTienda() {
   configurarFiltros();
   configurarTarjetasProductos();
   actualizarUI();
+
+  // Al arrancar, filtrará automáticamente usando "Celulares" (botón activo en el HTML)
   actualizarPaginacion();
 }
 
@@ -217,13 +224,12 @@ function eliminarDelCarrito(id) {
   actualizarUI();
 }
 
-// 📲 Mensaje Amigable y Estructurado para WhatsApp
+// 💬 Enviar pedido estructurado por WhatsApp
 function enviarPedidoWhatsApp() {
   if (carrito.length === 0) return;
 
   let subtotal = 0;
   let tieneProductosBajoConsulta = false;
-
   let detallesProductos = "";
 
   carrito.forEach((item) => {
@@ -269,28 +275,36 @@ function cambiarPagina(direccion) {
   }
 }
 
+// 🔍 Función Principal de Filtrado y Paginación
 function actualizarPaginacion() {
   const productCards = Array.from(document.querySelectorAll(".producto-card"));
-  const btnActivo = document.querySelector(".btn-filter.bg-blue-600");
 
-  const categoriaActiva = btnActivo ? btnActivo.dataset.category : "todos";
+  // Detectar la categoría del botón con la clase de fondo azul 'bg-blue-600'
+  const btnActivo = document.querySelector(".btn-filter.bg-blue-600");
+  const categoriaActiva = btnActivo ? btnActivo.dataset.category : "Celulares";
+
+  // Obtener el texto del input de búsqueda en minúsculas
   const textoBuscado = searchInputEl
     ? searchInputEl.value.toLowerCase().trim()
     : "";
 
+  // 1. Filtrar las tarjetas que cumplen AMBOS criterios
   const cardsFiltradas = productCards.filter((card) => {
+    // Coincidencia de Categoría (compara insensible a mayúsculas/minúsculas)
+    const catCard = (card.dataset.categoria || "").toLowerCase();
+    const catFiltro = categoriaActiva.toLowerCase();
     const coincideCategoria =
-      categoriaActiva === "todos" || card.dataset.categoria === categoriaActiva;
+      categoriaActiva === "todos" || catCard === catFiltro;
 
+    // Coincidencia de Búsqueda de Texto
     const titulo = (card.dataset.titulo || "").toLowerCase();
     const marca = (card.dataset.marca || "").toLowerCase();
-    const categoria = (card.dataset.categoria || "").toLowerCase();
 
     const coincideBusqueda =
       !textoBuscado ||
       titulo.includes(textoBuscado) ||
       marca.includes(textoBuscado) ||
-      categoria.includes(textoBuscado);
+      catCard.includes(textoBuscado);
 
     return coincideCategoria && coincideBusqueda;
   });
@@ -304,19 +318,23 @@ function actualizarPaginacion() {
   const indiceInicial = (paginaActual - 1) * PRODUCTOS_POR_PAGINA;
   const indiceFinal = indiceInicial + PRODUCTOS_POR_PAGINA;
 
+  // 2. Ocultar todas las tarjetas
   productCards.forEach((card) => (card.style.display = "none"));
 
+  // 3. Mostrar únicamente los elementos correspondientes a la página visible
   cardsFiltradas.forEach((card, index) => {
     if (index >= indiceInicial && index < indiceFinal) {
       card.style.display = "";
     }
   });
 
+  // 4. Actualizar estado numérico y estado de botones Prev/Next
   if (currentPageNumEl) currentPageNumEl.textContent = paginaActual.toString();
   if (btnPrevPage) btnPrevPage.disabled = paginaActual === 1;
   if (btnNextPage) btnNextPage.disabled = paginaActual === totalPaginas;
 }
 
+// 🎛️ Configuración de clicks en los botones de categoría
 function configurarFiltros() {
   const filterButtons = document.querySelectorAll(".btn-filter");
 
@@ -324,15 +342,18 @@ function configurarFiltros() {
     button.addEventListener("click", (e) => {
       e.preventDefault();
 
+      // Resetear clases de todos los botones a inactivo
       filterButtons.forEach(
         (b) =>
           (b.className =
             "btn-filter bg-slate-900 text-slate-400 text-xs md:text-sm px-5 py-2 rounded-xl border border-slate-800/80 transition-all whitespace-nowrap snap-start"),
       );
+
+      // Aplicar estilos activos al botón presionado
       button.className =
         "btn-filter bg-blue-600 text-white text-xs md:text-sm px-5 py-2 rounded-xl font-medium shadow-md transition-all whitespace-nowrap snap-start";
 
-      paginaActual = 1;
+      paginaActual = 1; // Volver a la página 1 tras cambiar filtro
       actualizarPaginacion();
     });
   });
