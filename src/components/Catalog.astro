@@ -38,6 +38,7 @@ const productos = await obtenerProductos();
   </div>
 
   <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    {/* 3. Mapeamos directamente la variable "productos" dinámica */}
     {productos.map((producto) => (
       <ProductCard producto={producto} />
     ))}

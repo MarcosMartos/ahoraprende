@@ -225,6 +225,7 @@ function eliminarDelCarrito(id) {
 }
 
 // 💬 Enviar pedido estructurado por WhatsApp
+// 💬 Enviar pedido estructurado por WhatsApp (Codificación corregida)
 function enviarPedidoWhatsApp() {
   if (carrito.length === 0) return;
 
@@ -235,32 +236,42 @@ function enviarPedidoWhatsApp() {
   carrito.forEach((item) => {
     subtotal += item.precio * item.cantidad;
     if (item.precio > 0) {
-      detallesProductos += `  🔹 *${item.cantidad}x* ${item.titulo} — *$${(item.precio * item.cantidad).toLocaleString("es-AR")}*\n`;
+      detallesProductos += `• *${item.cantidad}x* ${item.titulo} — *$${(item.precio * item.cantidad).toLocaleString("es-AR")}*\n`;
     } else {
       tieneProductosBajoConsulta = true;
-      detallesProductos += `  ❓ *${item.cantidad}x* ${item.titulo} — *(Precio a cotizar)*\n`;
+      detallesProductos += `• *${item.cantidad}x* ${item.titulo} — *(Precio a cotizar)*\n`;
     }
   });
 
   const montoDescuento = subtotal * DESCUENTO_PORCENTAJE;
   const totalFinal = subtotal - montoDescuento;
 
-  let mensaje = `👋 ¡Hola *AhoraPrende*! ¿Cómo están?\n\n`;
-  mensaje += `🛒 Quisiera encargar los siguientes productos desde la web:\n\n`;
-  mensaje += detallesProductos;
-  mensaje += `\n📌 *Resumen del Pedido:*\n`;
-  mensaje += `▫️ Subtotal: $${subtotal.toLocaleString("es-AR")}\n`;
-  mensaje += `🎉 *Descuento Web (10% OFF):* -$${montoDescuento.toLocaleString("es-AR")}\n`;
-  mensaje += `💳 *TOTAL A PAGAR:* *$${totalFinal.toLocaleString("es-AR")}*\n`;
+  // Construcción del texto usando viñetas o emojis en formato unicode explícito si lo deseas
+  let lineas = [
+    "¡Hola *AhoraPrende*! ¿Cómo están?",
+    "",
+    "Quisiera encargar los siguientes productos desde la web:",
+    "",
+    detallesProductos.trim(),
+    "",
+    "📌 *Resumen del Pedido:*",
+    `▫️ Subtotal: $${subtotal.toLocaleString("es-AR")}`,
+    `🎉 *Descuento Web (10% OFF):* -$${montoDescuento.toLocaleString("es-AR")}`,
+    `💳 *TOTAL A PAGAR:* *$${totalFinal.toLocaleString("es-AR")}*`,
+  ];
 
   if (tieneProductosBajoConsulta) {
-    mensaje += `\n💬 _(Aguardando cotización de los ítems bajo consulta)_`;
+    lineas.push("\n💬 _(Aguardando cotización de los ítems bajo consulta)_");
   }
 
-  mensaje += `\n\n✨ ¿Podrían confirmarme stock y los medios de pago disponibles? ¡Muchas gracias!`;
+  lineas.push(
+    "\n✨ ¿Podrían confirmarme stock y los medios de pago disponibles? ¡Muchas gracias!",
+  );
+
+  const mensajeCompleto = lineas.join("\n");
 
   window.open(
-    `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`,
+    `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(mensajeCompleto)}`,
     "_blank",
   );
 }
